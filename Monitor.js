@@ -10,6 +10,10 @@ const options = {
 const pcap_session = pcap.createSession(device_name, options);
 const wss = new ws.WebSocketServer({ port: 3005 })
 
+wss.on('connection', ()=>{
+    console.log('Client connected!')
+})
+
 console.log("pcap capture and server started")
 
 pcap.warningHandler = function (warn) {
@@ -17,14 +21,12 @@ pcap.warningHandler = function (warn) {
 }
 
 pcap_session.on('packet', (raw_packet) => {
-    // console.log(raw_packet);
     let packet = pcap.decode.packet(raw_packet);
-    // console.log(packet)
-    wss.on('connection', ()=>{
-        console.log('frontend connected')
-    })
-    wss.emit('message', 'got packet')
-    // throw new Error("aici gata")
+    wss.clients.forEach((ws)=>{
+        ws.send(JSON.stringify(packet))
+    })    
 })
 
-console.log("created session")
+// TODO: ADD PACKET INJECTION
+
+console.log("Session created!")
