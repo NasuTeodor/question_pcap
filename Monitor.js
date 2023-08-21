@@ -10,6 +10,8 @@ const options = {
 const pcap_session = pcap.createSession(device_name, options);
 const wss = new ws.WebSocketServer({ port: 3005 })
 
+const PacketParser = new MonitorPacketParser();
+
 wss.on('connection', () => {
     console.log('Client connected!')
 })
@@ -23,6 +25,8 @@ pcap.warningHandler = function (warn) {
 
 pcap_session.on('packet', (raw_packet) => {
     console.log(raw_packet)
+    console.log(PacketParser.parse(raw_packet))
+    throw new Error('done')
     // #### TO DO NOW
     // ADD CUSTOM PACKET PARSER FOR MONITOR MODE
     // LOOKUP PCAP IN TCPDUMP
