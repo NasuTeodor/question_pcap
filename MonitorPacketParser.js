@@ -1,13 +1,7 @@
+import { writeFile } from "fs/promises";
+
 function decimalToHex(decimal) { return (decimal.toString(16)) }
 function hexToDeciaml(hex) { return (parseInt(hex, 16)) }
-function hexToChar(hex) { return (hex.toString()) }
-
-function epochToLocal(decimal_epoch) {
-    let d = new Date(0)
-    d.setUTCSeconds(decimal_epoch)
-    return d
-}
-
 function epochHexToDate(epochDate) {
     const timestamp = parseInt(epochDate, 16);
     const dt = new Date(timestamp * 1000);
@@ -38,23 +32,48 @@ class PacketHeader {
     // STRUCTURII DESCRISE IN VARIABILELE USED
     // #############################
     constructor(pcap_packet_header) {
-        //get timestamp
-        let tsSec = ''
+        let hexTsSec = ''
+        let hexTsMicro = ''
+
         for (let i = 3; i >= 0; i--)
-            tsSec += decimalToHex(pcap_packet_header[i])
-
-        this.TIMESTAMP_SECONDS = hexToDeciaml(tsSec)
-        this.TIMESTAMP = hexToDeciaml(tsSec)
-        this.CAPTURE_DATE = epochHexToDate(tsSec)
-
-        //get microsecond of capture
-        let tsMicro = ''
+            hexTsSec += decimalToHex(pcap_packet_header[i])
         for (let i = 7; i >= 4; i--)
-            tsMicro += decimalToHex(pcap_packet_header[i])
-        console.log(hexToDeciaml(tsMicro))
+            hexTsMicro += decimalToHex(pcap_packet_header[i])
 
+        //main data
+        this.TIMESTAMP_SECONDS = hexToDeciaml(hexTsSec) * 1000
+        this.TIMESTAMP = hexToDeciaml(hexTsSec) * 1000
+        this.TIMESTAMP_MICROSECONDS = hexToDeciaml(hexTsMicro)
+
+        //telemetry bonus
+        let finalDate = new Date(this.TIMESTAMP_SECONDS)
+        finalDate.setMilliseconds(hexToDeciaml(hexTsMicro) / 1000)
+        this.CAPTURE_DATE = finalDate
+
+        let hexCapLen = ''
+        let hexOrgLen = ''
+
+        for (let i = 11; i >= 8; i--)
+            hexCapLen += decimalToHex(pcap_packet_header[i])
+        for (let i = 15; i >= 12; i--)
+            hexOrgLen += decimalToHex(pcap_packet_header[i])
+
+        let packetLength = hexToDeciaml(hexCapLen)
+        let originalLength = hexToDeciaml(hexOrgLen)
+
+        this.CAPLEN = packetLength
+        this.LEN = originalLength
+        this.CAPTURE_LENGTH = packetLength
+        this.ORIGINAL_LENGTH = originalLength
+
+        //discard incomplete packets
+        if (packetLength !== originalLength) {
+            console.log('[PACKET HEADER]: Recieved actual length different from original length. Discarding packet')
+            throw new Error('Incomplete packet, size difference between read and reported')
+        }
 
     }
+
 }
 
 class EtherHeader {
@@ -103,17 +122,41 @@ class MonitorPacketParser {
     //REST SEQ
     REST_SEQ = undefined
     // todo add header structures for different protocols over ip
+
+    LINK_TYPE = undefined
+    HEADER = undefined
+    BUFFER = undefined
+
+    test_compatibility(link_type) {
+        if (link_type != this.ACCEPTED_LINK_TYPE)
+            throw new Error('Invalid Link Type. Unable to understand this format')
+        else
+            return true;
+    }
+
+    //ai buf? header si link_type
     parse(packet) {
 
-        //ai buf? header si link_type
-        let header = packet.header
-        console.log(header)
-        let s = ''
-        for (let i = 0; i < header.length; i++)
-            s += hexToChar(decimalToHex(header[i]))
-        console.log(s)
-        let pkthdr = new PacketHeader(header)
-        console.log('[END OF HEADER CAST]\n\n')
+        this.LINK_TYPE = packet.link_type
+        this.HEADER = packet.header
+        this.BUFFER = packet.buf
+
+        //check if it's a rfmon packet
+        this.test_compatibility(this.LINK_TYPE)
+
+        let parsedPacketHeader = new PacketHeader(this.HEADER);
+
+        console.log(parsedPacketHeader.CAPTURE_LENGTH, this.BUFFER.length)
+
+        var payloadOffset = this.ETHER_HEADER_SIZE + this.ETHER_ADDR_LEN;//skip ethernet headers and addresses
+
+        let buffer = ''
+
+        for (let i = 0; i <= parsedPacketHeader.CAPTURE_LENGTH + 4; i++)
+            buffer += `${decimalToHex(this.BUFFER[i])} `
+
+        writeFile('buffer.txt', buffer, (err) => { if (err) { console.log(err) } })
+
     }
 
 
