@@ -146,17 +146,17 @@ class MonitorPacketParser {
 
         let parsedPacketHeader = new PacketHeader(this.HEADER);
 
-        console.log(parsedPacketHeader.CAPTURE_LENGTH, this.BUFFER.length)
+        console.log(parsedPacketHeader.CAPTURE_LENGTH)
 
         var payloadOffset = this.ETHER_HEADER_SIZE + this.ETHER_ADDR_LEN;//skip ethernet headers and addresses
 
-        let buffer = ''
+        console.log(packet.header)
+        let buffer = `${this.HEADER}\n${parsedPacketHeader.CAPTURE_LENGTH}\n`
 
-        for (let i = 0; i <= parsedPacketHeader.CAPTURE_LENGTH + 4; i++)
+        for (let i = 0 + parsedPacketHeader.CAPTURE_LENGTH; i <= parsedPacketHeader.CAPTURE_LENGTH + 30000; i++)
             buffer += `${decimalToHex(this.BUFFER[i])} `
 
         writeFile('buffer.txt', buffer, (err) => { if (err) { console.log(err) } })
-
     }
 
 
