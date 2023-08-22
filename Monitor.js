@@ -26,7 +26,10 @@ console.log("pcap capture and server started")
 
 pcap_session.on('packet', (raw_packet) => {
     // console.log(raw_packet)
-    console.log(PacketParser.parse(raw_packet))
+    PacketParser.parse(raw_packet)
+
+    wss.clients.forEach(ws=>ws.send('[WARN]: RETURNING RAW PACKETS'))
+    wss.clients.forEach(ws=>ws.send(JSON.stringify(raw_packet)))
     // throw new Error('done')
     // #### TO DO NOW
     // ADD CUSTOM PACKET PARSER FOR MONITOR MODE

@@ -1,11 +1,59 @@
+function decimalToHex(decimal) { return (decimal.toString(16)) }
+function hexToDeciaml(hex) { return (parseInt(hex, 16)) }
+function hexToChar(hex) { return (hex.toString()) }
+
+function epochToLocal(decimal_epoch) {
+    let d = new Date(0)
+    d.setUTCSeconds(decimal_epoch)
+    return d
+}
+
+function epochHexToDate(epochDate) {
+    const timestamp = parseInt(epochDate, 16);
+    const dt = new Date(timestamp * 1000);
+    return dt
+}
+
 class PacketHeader {
     //PACKET DATA STRUCTURE
     TIMESTAMP = undefined   //momentul de capture
     CAPLEN = undefined      //length of portion present //nush ce e asta
     LEN = undefined         //packet length
 
-    constructor(packet) {
-        throw new Error('nuigata')
+    //USED STRUCTURE UNOFFICIAL
+    HEADER_LENGTH = 16                  //4 fields a cate 4 bits
+    FIELD_LENGTH = 4
+    //ordinea in packet este asta: tsSecond tsMicro capLen orgLen
+    TIMESTAMP_SECONDS = undefined       //standard epoch
+    TIMESTAMP_MICROSECONDS = undefined  //microsecond fraction of the ts OR NANOSECOND MA OMOR SINCER LA CE DOCUMENTATIE AU ASTIA CA AU ZIS UNA SI AU PUS ALTA TULE DUMNEZEII LOR
+    CAPTURE_LENGTH = undefined          //number for length of data bites
+    ORIGINAL_LENGTH = undefined         //actual packet size on the network same as captured sper si doresc asta
+
+    //PERSONAL INFORMATIONS
+    //ADDED BECAUSE I LIKE TO USE THEM FOR TELEMETRY
+    CAPTURE_DATE = undefined
+
+    // #############################
+    // PARCURGEREA HEADERULUI ESTE HARDCODED PE BAZA
+    // STRUCTURII DESCRISE IN VARIABILELE USED
+    // #############################
+    constructor(pcap_packet_header) {
+        //get timestamp
+        let tsSec = ''
+        for (let i = 3; i >= 0; i--)
+            tsSec += decimalToHex(pcap_packet_header[i])
+
+        this.TIMESTAMP_SECONDS = hexToDeciaml(tsSec)
+        this.TIMESTAMP = hexToDeciaml(tsSec)
+        this.CAPTURE_DATE = epochHexToDate(tsSec)
+
+        //get microsecond of capture
+        let tsMicro = ''
+        for (let i = 7; i >= 4; i--)
+            tsMicro += decimalToHex(pcap_packet_header[i])
+        console.log(hexToDeciaml(tsMicro))
+
+
     }
 }
 
@@ -56,7 +104,16 @@ class MonitorPacketParser {
     REST_SEQ = undefined
     // todo add header structures for different protocols over ip
     parse(packet) {
-        console.log(...Object.keys(packet))
+
+        //ai buf? header si link_type
+        let header = packet.header
+        console.log(header)
+        let s = ''
+        for (let i = 0; i < header.length; i++)
+            s += hexToChar(decimalToHex(header[i]))
+        console.log(s)
+        let pkthdr = new PacketHeader(header)
+        console.log('[END OF HEADER CAST]\n\n')
     }
 
 
