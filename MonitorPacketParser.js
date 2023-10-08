@@ -41,7 +41,7 @@ class PacketHeader {
             hexTsMicro += decimalToHex(pcap_packet_header[i])
 
         //main data
-        this.TIMESTAMP_SECONDS = hexToDeciaml(hexTsSec) * 1000
+        this.TIMESTAMP_SECONDS = hexToDeciaml(hexTsSec)
         this.TIMESTAMP = hexToDeciaml(hexTsSec) * 1000
         this.TIMESTAMP_MICROSECONDS = hexToDeciaml(hexTsMicro)
 
@@ -77,6 +77,8 @@ class PacketHeader {
 }
 
 class EtherHeader {
+    //nu stiu ce fac cu assta
+
     //ETHER HEADER STRUCTURE
     ETHER_DESTINATION_HOST = undefined
     EHTER_SOURCE_HOST = undefined
@@ -106,9 +108,13 @@ class IPHeader {
     IP_FLAG_MORE_FRAGMENTS = 0x2000     //more fragment
     IP_FLAG_OFFMASK = 0x1fff            //mask for fragmenting bits
 
-    constructor() {
-        throw new Error('nuigata')
+    constructor(buf) {
+        
     }
+}
+
+class TcpHeader{
+    
 }
 
 class MonitorPacketParser {
@@ -145,12 +151,15 @@ class MonitorPacketParser {
         this.test_compatibility(this.LINK_TYPE)
 
         let parsedPacketHeader = new PacketHeader(this.HEADER);
-
-        console.log(parsedPacketHeader.CAPTURE_LENGTH)
+        let parsedIpHeader = new IPHeader(this.BUFFER);
 
         var payloadOffset = this.ETHER_HEADER_SIZE + this.ETHER_ADDR_LEN;//skip ethernet headers and addresses
 
-        console.log(packet.header)
+        // console.log(packet.header)
+        console.log("####PARSED PACKET HEADER")
+        console.log(parsedPacketHeader)
+
+
         let buffer = `${this.HEADER}\n${parsedPacketHeader.CAPTURE_LENGTH}\n`
 
         for (let i = 0 + parsedPacketHeader.CAPTURE_LENGTH; i <= parsedPacketHeader.CAPTURE_LENGTH + 30000; i++)
