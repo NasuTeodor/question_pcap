@@ -29,19 +29,19 @@ console.log("pcap capture and server started")
 pcap_session.on('packet', (raw_packet) => {
     // console.log(raw_packet)
     PacketParser.parse(raw_packet)
-
-    wss.clients.forEach(ws=>ws.send('[WARN]: RETURNING RAW PACKETS'))
-    wss.clients.forEach(ws=>ws.send(JSON.stringify(raw_packet)))
+    // wss.clients.forEach(ws=>ws.send('[WARN]: RETURNING RAW PACKETS'))
+    // wss.clients.forEach(ws=>ws.send(JSON.stringify(raw_packet)))
     // throw new Error('done')
     // #### TO DO NOW
     // ADD CUSTOM PACKET PARSER FOR MONITOR MODE
     // LOOKUP PCAP IN TCPDUMP
     // try {
-    //     let packet = pcap.decode.packet(raw_packet);
+        // let packet = pcap.decode.packet(raw_packet);
     //     wss.clients.forEach((ws) => {
-    //         ws.send(JSON.stringify(packet))
+    //     ws.send(JSON.stringify(packet))
     //     })
     // } catch (e) {
+    //     // console.log(e)
     //     wss.clients.forEach((ws) => { ws.send(JSON.stringify(e)) })
     //     wss.clients.forEach((ws) => { ws.send(raw_packet) })
     // }

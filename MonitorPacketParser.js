@@ -8,7 +8,7 @@ function epochHexToDate(epochDate) {
     return dt
 }
 
-class PacketHeader {
+export class PacketHeader {
     //PACKET DATA STRUCTURE
     TIMESTAMP = undefined   //momentul de capture
     CAPLEN = undefined      //length of portion present //nush ce e asta
@@ -93,7 +93,7 @@ class IPHeader {
     //IP HEADER STRUCTURE
     IP_VERSION = undefined
     IP_SERVICE = undefined
-    IP_TOTAL_LENGTH = undefined
+    IP_LENGTH = undefined
     IP_IDENTIFICATION = undefined
     IP_OFFSET = undefined
     IP_TTL = undefined
@@ -156,16 +156,15 @@ class MonitorPacketParser {
         var payloadOffset = this.ETHER_HEADER_SIZE + this.ETHER_ADDR_LEN;//skip ethernet headers and addresses
 
         // console.log(packet.header)
-        console.log("####PARSED PACKET HEADER")
-        console.log(parsedPacketHeader)
-
+        // console.log("####PARSED PACKET HEADER")
+        // console.log(parsedPacketHeader)
+        // console.log(packet.buf)
 
         let buffer = `${this.HEADER}\n${parsedPacketHeader.CAPTURE_LENGTH}\n`
 
         for (let i = 0 + parsedPacketHeader.CAPTURE_LENGTH; i <= parsedPacketHeader.CAPTURE_LENGTH + 30000; i++)
             buffer += `${decimalToHex(this.BUFFER[i])} `
-
-        writeFile('buffer.txt', buffer, (err) => { if (err) { console.log(err) } })
+        // writeFile('buffer.txt', buffer, (err) => { if (err) { console.log(err) } })
     }
 
 
